@@ -1,6 +1,6 @@
 package com.medislot.Medi_Slot_Backend.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +13,7 @@ public class Doctor {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)
+    @JsonIgnore
     private User user;
 
     private String name;

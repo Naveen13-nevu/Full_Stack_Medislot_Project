@@ -1,10 +1,8 @@
 package com.medislot.Medi_Slot_Backend.controller;
 
 import com.medislot.Medi_Slot_Backend.dto.SlotDTO;
-import com.medislot.Medi_Slot_Backend.entity.Doctor;
-import com.medislot.Medi_Slot_Backend.entity.Slot;
+import com.medislot.Medi_Slot_Backend.entity.*;
 import com.medislot.Medi_Slot_Backend.service.DoctorService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +27,13 @@ public class DoctorController {
     @GetMapping("/doctors/{doctorId}/slots")
     public List<SlotDTO> getAvailableSlots(@PathVariable Long doctorId) {
         return doctorService.getAvailableSlots(doctorId);
+    }
+
+    // NEW: Get all slots (booked + free) for the logged-in doctor
+    @GetMapping("/doctor/slots")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public List<SlotDTO> getMySlots(@AuthenticationPrincipal UserDetails userDetails) {
+        return doctorService.getDoctorSlots(userDetails.getUsername());
     }
 
     @PostMapping("/doctor/slots")

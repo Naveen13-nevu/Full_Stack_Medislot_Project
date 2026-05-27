@@ -1,4 +1,5 @@
 package com.medislot.Medi_Slot_Backend.controller;
+
 import com.medislot.Medi_Slot_Backend.dto.AppointmentDTO;
 import com.medislot.Medi_Slot_Backend.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +36,14 @@ public class AppointmentController {
     @PreAuthorize("hasRole('DOCTOR')")
     public List<AppointmentDTO> getDoctorAppointments(@AuthenticationPrincipal UserDetails userDetails) {
         return appointmentService.getDoctorAppointments(userDetails.getUsername());
+    }
+
+    @DeleteMapping("/patient/appointments/{appointmentId}")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<?> cancelAppointment(
+            @PathVariable Long appointmentId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        appointmentService.cancelAppointment(appointmentId, userDetails.getUsername());
+        return ResponseEntity.ok("Appointment cancelled successfully");
     }
 }

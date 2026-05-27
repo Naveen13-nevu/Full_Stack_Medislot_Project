@@ -1,13 +1,8 @@
 package com.medislot.Medi_Slot_Backend.service;
 
-
 import com.medislot.Medi_Slot_Backend.dto.SlotDTO;
-import com.medislot.Medi_Slot_Backend.entity.Doctor;
-import com.medislot.Medi_Slot_Backend.entity.Slot;
-import com.medislot.Medi_Slot_Backend.entity.User;
-import com.medislot.Medi_Slot_Backend.repository.DoctorRepository;
-import com.medislot.Medi_Slot_Backend.repository.SlotRepository;
-import com.medislot.Medi_Slot_Backend.repository.UserRepository;
+import com.medislot.Medi_Slot_Backend.entity.*;
+import com.medislot.Medi_Slot_Backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,17 +27,18 @@ public class DoctorService {
 
     public List<SlotDTO> getAvailableSlots(Long doctorId) {
         List<Slot> slots = slotRepository.findByDoctorIdAndIsBookedFalse(doctorId);
-        return slots.stream().map(slot -> new SlotDTO(
-                slot.getId(),
-                slot.getDoctor().getId(),
-                slot.getDoctor().getName(),
-                slot.getStartTime(),
-                slot.getEndTime(),
-                slot.isBooked()
-        )).collect(Collectors.toList());
+        return slots.stream().map(this::toSlotDTO).collect(Collectors.toList());
     }
 
-    // For DOCTOR role: add a slot
+    public List<SlotDTO> getDoctorSlots(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Doctor doctor = doctorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+        List<Slot> slots = slotRepository.findByDoctorId(doctor.getId());
+        return slots.stream().map(this::toSlotDTO).collect(Collectors.toList());
+    }
+
     public Slot addSlot(String username, Slot slot) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -51,5 +47,25 @@ public class DoctorService {
         slot.setDoctor(doctor);
         slot.setBooked(false);
         return slotRepository.save(slot);
+    }
+
+    // New method for admin to add slot directly by doctor ID
+    public Slot addSlotForDoctor(Long doctorId, Slot slot) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        slot.setDoctor(doctor);
+        slot.setBooked(false);
+        return slotRepository.save(slot);
+    }
+
+    private SlotDTO toSlotDTO(Slot slot) {
+        return new SlotDTO(
+                slot.getId(),
+                slot.getDoctor().getId(),
+                slot.getDoctor().getName(),
+                slot.getStartTime(),
+                slot.getEndTime(),
+                slot.isBooked()
+        );
     }
 }

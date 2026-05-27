@@ -1,6 +1,5 @@
 package com.medislot.Medi_Slot_Backend.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +21,6 @@ public class User {
     private Role role;
 
     public enum Role {
-        PATIENT, DOCTOR
+        PATIENT, DOCTOR, ADMIN
     }
 }

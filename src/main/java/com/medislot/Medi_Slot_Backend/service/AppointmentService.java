@@ -1,16 +1,11 @@
 package com.medislot.Medi_Slot_Backend.service;
 
-
 import com.medislot.Medi_Slot_Backend.dto.AppointmentDTO;
-import com.medislot.Medi_Slot_Backend.entity.Appointment;
-import com.medislot.Medi_Slot_Backend.entity.Slot;
-import com.medislot.Medi_Slot_Backend.entity.User;
-import com.medislot.Medi_Slot_Backend.repository.AppointmentRepository;
-import com.medislot.Medi_Slot_Backend.repository.SlotRepository;
-import com.medislot.Medi_Slot_Backend.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.medislot.Medi_Slot_Backend.entity.*;
+import com.medislot.Medi_Slot_Backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -74,5 +69,24 @@ public class AppointmentService {
                 app.getSlot().getEndTime(),
                 app.getBookingTime()
         )).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void cancelAppointment(Long appointmentId, String patientUsername) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        // Verify the appointment belongs to the logged‑in patient
+        if (!appointment.getPatient().getUsername().equals(patientUsername)) {
+            throw new RuntimeException("You can only cancel your own appointments");
+        }
+
+        // Free the slot
+        Slot slot = appointment.getSlot();
+        slot.setBooked(false);
+        slotRepository.save(slot);
+
+        // Delete the appointment
+        appointmentRepository.delete(appointment);
     }
 }

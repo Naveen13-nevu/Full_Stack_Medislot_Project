@@ -22,7 +22,7 @@ public class AppointmentController {
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<?> bookSlot(@PathVariable Long slotId,
                                       @AuthenticationPrincipal UserDetails userDetails) {
-        appointmentService.bookSlot(slotId, userDetails.getUsername());
+        appointmentService.bookSlot(slotId, userDetails.getUsername());   // email
         return ResponseEntity.ok("Slot booked successfully");
     }
 
@@ -40,10 +40,9 @@ public class AppointmentController {
 
     @DeleteMapping("/patient/appointments/{appointmentId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> cancelAppointment(
-            @PathVariable Long appointmentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> cancelAppointment(@PathVariable Long appointmentId,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
         appointmentService.cancelAppointment(appointmentId, userDetails.getUsername());
-        return ResponseEntity.ok("Appointment cancelled successfully");
+        return ResponseEntity.ok("Appointment cancelled");
     }
 }

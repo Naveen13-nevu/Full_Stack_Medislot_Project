@@ -12,13 +12,22 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username;
+    private String email;               // used as login identifier
 
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    // Patient-specific fields (nullable for doctors/admins)
+    private String name;                // full name of patient or doctor display name
+    private String location;
+    private String pincode;
+
+    // Optional – keep for backward compatibility, can be null
+    @Column(unique = true)
+    private String username;
 
     public enum Role {
         PATIENT, DOCTOR, ADMIN

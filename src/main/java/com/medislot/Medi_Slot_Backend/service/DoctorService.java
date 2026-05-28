@@ -30,8 +30,8 @@ public class DoctorService {
         return slots.stream().map(this::toSlotDTO).collect(Collectors.toList());
     }
 
-    public List<SlotDTO> getDoctorSlots(String username) {
-        User user = userRepository.findByUsername(username)
+    public List<SlotDTO> getDoctorSlots(String email) {   // email parameter
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Doctor doctor = doctorRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
@@ -39,8 +39,8 @@ public class DoctorService {
         return slots.stream().map(this::toSlotDTO).collect(Collectors.toList());
     }
 
-    public Slot addSlot(String username, Slot slot) {
-        User user = userRepository.findByUsername(username)
+    public Slot addSlot(String email, Slot slot) {    // email parameter
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Doctor doctor = doctorRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
@@ -49,7 +49,6 @@ public class DoctorService {
         return slotRepository.save(slot);
     }
 
-    // New method for admin to add slot directly by doctor ID
     public Slot addSlotForDoctor(Long doctorId, Slot slot) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));

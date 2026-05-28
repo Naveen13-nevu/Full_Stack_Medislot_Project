@@ -23,7 +23,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        // Only allow patients to self-register
         if (!"PATIENT".equalsIgnoreCase(request.getRole())) {
             return ResponseEntity.badRequest().body("Only patient registration is allowed here");
         }

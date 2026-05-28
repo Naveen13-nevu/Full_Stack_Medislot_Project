@@ -7,9 +7,8 @@ import com.medislot.Medi_Slot_Backend.entity.*;
 import com.medislot.Medi_Slot_Backend.repository.*;
 import com.medislot.Medi_Slot_Backend.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;   // ← THIS WAS MISSING
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,39 +31,33 @@ public class AuthService {
     @Autowired
     private PasswordEncoder encoder;
 
-    /**
-     * Authenticate user and return JWT token with role.
-     */
     public AuthResponse login(AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        String role = authentication.getAuthorities()
-                .iterator().next().getAuthority()
-                .substring(5); // remove "ROLE_" prefix
-        String token = jwtUtils.generateToken(request.getUsername(), role);
+        String role = authentication.getAuthorities().iterator().next().getAuthority().substring(5);
+        String token = jwtUtils.generateToken(request.getEmail(), role);
         return new AuthResponse(token, role);
     }
 
-    /**
-     * Register a new user.
-     * If the role is DOCTOR, also create the Doctor profile.
-     */
     public void register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already taken");
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already in use");
         }
 
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
         user.setPassword(encoder.encode(request.getPassword()));
         user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+        user.setName(request.getName());
+        user.setLocation(request.getLocation());
+        user.setPincode(request.getPincode());
         userRepository.save(user);
 
         if ("DOCTOR".equalsIgnoreCase(request.getRole())) {
             Doctor doctor = new Doctor();
             doctor.setUser(user);
-            doctor.setName(request.getName());
+            doctor.setName(request.getName());        // doctor display name
             doctor.setSpecialization(request.getSpecialization());
             doctor.setExperience(request.getExperience());
             doctor.setPhone(request.getPhone());
@@ -72,22 +65,14 @@ public class AuthService {
         }
     }
 
-    /**
-     * Delete a doctor by user ID (admin only).
-     */
     @Transactional
     public void deleteDoctor(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         if (user.getRole() != User.Role.DOCTOR) {
             throw new RuntimeException("User is not a doctor");
         }
-
-        // Remove associated doctor profile first
         doctorRepository.findByUserId(userId).ifPresent(doctorRepository::delete);
-
-        // Then delete the user account
         userRepository.delete(user);
     }
 }

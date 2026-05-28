@@ -11,6 +11,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
@@ -21,9 +22,9 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
-                .subject(username)
+                .subject(email)      // subject is now email
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
@@ -31,22 +32,14 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+    public String getEmailFromToken(String token) {
+        return Jwts.parser().verifyWith(getSigningKey()).build()
+                .parseSignedClaims(token).getPayload().getSubject();
     }
 
     public String getRoleFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("role", String.class);
+        return Jwts.parser().verifyWith(getSigningKey()).build()
+                .parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     public boolean validateToken(String token) {

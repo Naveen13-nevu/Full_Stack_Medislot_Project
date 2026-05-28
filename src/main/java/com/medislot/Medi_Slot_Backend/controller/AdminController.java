@@ -22,7 +22,7 @@ public class AdminController {
     @PostMapping("/doctors")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createDoctor(@RequestBody RegisterRequest request) {
-        request.setRole("DOCTOR"); // force doctor role
+        request.setRole("DOCTOR");
         authService.register(request);
         return ResponseEntity.ok("Doctor created successfully");
     }

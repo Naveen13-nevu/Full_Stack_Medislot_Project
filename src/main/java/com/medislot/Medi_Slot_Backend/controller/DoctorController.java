@@ -29,11 +29,10 @@ public class DoctorController {
         return doctorService.getAvailableSlots(doctorId);
     }
 
-    // NEW: Get all slots (booked + free) for the logged-in doctor
     @GetMapping("/doctor/slots")
     @PreAuthorize("hasRole('DOCTOR')")
     public List<SlotDTO> getMySlots(@AuthenticationPrincipal UserDetails userDetails) {
-        return doctorService.getDoctorSlots(userDetails.getUsername());
+        return doctorService.getDoctorSlots(userDetails.getUsername());   // email
     }
 
     @PostMapping("/doctor/slots")

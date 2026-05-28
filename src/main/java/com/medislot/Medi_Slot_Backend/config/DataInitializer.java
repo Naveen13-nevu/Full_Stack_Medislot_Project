@@ -12,13 +12,12 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initAdmin(UserRepository userRepo, PasswordEncoder encoder) {
         return args -> {
-            if (!userRepo.existsByUsername("admin")) {
+            if (!userRepo.existsByEmail("admin@medislot.com")) {
                 User admin = new User();
-                admin.setUsername("admin");
+                admin.setEmail("admin@medislot.com");
                 admin.setPassword(encoder.encode("admin123"));
                 admin.setRole(User.Role.ADMIN);
                 userRepo.save(admin);
-                System.out.println("Default admin created (admin / admin123)");
             }
         };
     }

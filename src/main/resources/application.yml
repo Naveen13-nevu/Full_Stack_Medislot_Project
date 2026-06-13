@@ -1,10 +1,16 @@
-
 server:
   port: 8080
 
 spring:
   application:
     name: Medi-Slot-Backend
+
+  # ─── Default datasource (used when no profile is set) ───
+  datasource:
+    url: jdbc:mysql://localhost:3306/Medislot_backend?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: Naveenkumar@13
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
@@ -20,34 +26,28 @@ spring:
     caffeine:
       spec: maximumSize=500,expireAfterAccess=600s
 
-
 app:
   jwt:
     secret: mySecretKeyForMediSlotApp2024VeryLongAndSecureString
     expiration-ms: 86400000
 
-
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,caches,beans
   endpoint:
     health:
       show-details: when-authorized
+    beans:
+      show-details: always
 
-
+# ─── DEV Profile (overrides the default) ──────────────────
 ---
-
 spring:
   config:
     activate:
       on-profile: dev
-  datasource:
-    url: jdbc:mysql://localhost:3306/Medislot_backend
-    username: root
-    password: Naveenkumar@13
-    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
 
@@ -56,8 +56,8 @@ logging:
     com.medislot: DEBUG
     org.springframework.security: INFO
 
+# ─── PROD Profile ────────────────────────────────────────
 ---
-
 spring:
   config:
     activate:
@@ -65,7 +65,7 @@ spring:
   datasource:
     url: jdbc:mysql://prod-db-server:3306/medislot_db?useSSL=true&allowPublicKeyRetrieval=true
     username: medislot_app
-    password: ${DB_PASSWORD}           # set via environment variable
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: false

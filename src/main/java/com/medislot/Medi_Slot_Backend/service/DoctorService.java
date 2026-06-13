@@ -5,6 +5,9 @@ import com.medislot.Medi_Slot_Backend.entity.*;
 import com.medislot.Medi_Slot_Backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +24,10 @@ public class DoctorService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Doctor> getAllDoctors() {
-        return doctorRepository.findAll();
+    // inside DoctorService, modify the method:
+    @Cacheable(value = "doctors", unless = "#result.isEmpty()")
+    public Page<Doctor> getAllDoctors(Pageable pageable) {
+        return doctorRepository.findAll(pageable);
     }
 
     public List<SlotDTO> getAvailableSlots(Long doctorId) {

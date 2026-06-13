@@ -1,0 +1,75 @@
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Medi-Slot-Backend
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+
+
+app:
+  jwt:
+    secret: mySecretKeyForMediSlotApp2024VeryLongAndSecureString
+    expiration-ms: 86400000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/Medislot_backend
+    username: root
+    password: Naveenkumar@13
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.medislot: DEBUG
+    org.springframework.security: INFO
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://prod-db-server:3306/medislot_db?useSSL=true&allowPublicKeyRetrieval=true
+    username: medislot_app
+    password: ${DB_PASSWORD}           # set via environment variable
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.medislot: INFO

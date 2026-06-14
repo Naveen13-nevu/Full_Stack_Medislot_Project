@@ -1,7 +1,9 @@
 package com.medislot.Medi_Slot_Backend.controller;
 
-import com.medislot.Medi_Slot_Backend.dto.RegisterRequest;
+import com.medislot.Medi_Slot_Backend.dto.DoctorRegisterRequest;
+import com.medislot.Medi_Slot_Backend.entity.Doctor;
 import com.medislot.Medi_Slot_Backend.entity.Slot;
+import com.medislot.Medi_Slot_Backend.repository.DoctorRepository;
 import com.medislot.Medi_Slot_Backend.service.AuthService;
 import com.medislot.Medi_Slot_Backend.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +21,22 @@ public class AdminController {
     @Autowired
     private DoctorService doctorService;
 
+    @Autowired
+    private DoctorRepository doctorRepository;
+
     @PostMapping("/doctors")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createDoctor(@RequestBody RegisterRequest request) {
-        request.setRole("DOCTOR");
-        authService.register(request);
+    public ResponseEntity<?> createDoctor(@RequestBody DoctorRegisterRequest request) {
+        authService.registerDoctor(request);
         return ResponseEntity.ok("Doctor created successfully");
     }
 
-    @DeleteMapping("/doctors/{userId}")
+    @DeleteMapping("/doctors/{doctorId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteDoctor(@PathVariable Long userId) {
-        authService.deleteDoctor(userId);
+    public ResponseEntity<?> deleteDoctor(@PathVariable Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        authService.deleteDoctor(doctor.getUser().getId());
         return ResponseEntity.ok("Doctor deleted");
     }
 

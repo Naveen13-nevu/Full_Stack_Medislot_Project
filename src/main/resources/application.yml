@@ -7,7 +7,7 @@ spring:
 
   # ─── Default datasource (used when no profile is set) ───
   datasource:
-    url: jdbc:mysql://localhost:3306/Medislot_backend?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/Medislot_backend
     username: root
     password: Naveenkumar@13
     driver-class-name: com.mysql.cj.jdbc.Driver

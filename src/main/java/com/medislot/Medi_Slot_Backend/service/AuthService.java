@@ -1,12 +1,11 @@
 package com.medislot.Medi_Slot_Backend.service;
 
-import com.medislot.Medi_Slot_Backend.dto.AuthRequest;
-import com.medislot.Medi_Slot_Backend.dto.AuthResponse;
-import com.medislot.Medi_Slot_Backend.dto.RegisterRequest;
+import com.medislot.Medi_Slot_Backend.dto.*;
 import com.medislot.Medi_Slot_Backend.entity.*;
 import com.medislot.Medi_Slot_Backend.repository.*;
 import com.medislot.Medi_Slot_Backend.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +28,12 @@ public class AuthService {
     private DoctorRepository doctorRepository;
 
     @Autowired
+    private SlotRepository slotRepository;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
     private PasswordEncoder encoder;
 
     public AuthResponse login(AuthRequest request) {
@@ -40,31 +45,45 @@ public class AuthService {
         return new AuthResponse(token, role);
     }
 
-    public void register(RegisterRequest request) {
+    // ---------- Patient registration (public) ----------
+    public void registerPatient(PatientRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
-
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(encoder.encode(request.getPassword()));
-        user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+        user.setRole(User.Role.PATIENT);
         user.setName(request.getName());
         user.setLocation(request.getLocation());
         user.setPincode(request.getPincode());
         userRepository.save(user);
-
-        if ("DOCTOR".equalsIgnoreCase(request.getRole())) {
-            Doctor doctor = new Doctor();
-            doctor.setUser(user);
-            doctor.setName(request.getName());        // doctor display name
-            doctor.setSpecialization(request.getSpecialization());
-            doctor.setExperience(request.getExperience());
-            doctor.setPhone(request.getPhone());
-            doctorRepository.save(doctor);
-        }
     }
 
+    // ---------- Doctor registration (admin only) ----------
+    @CacheEvict(value = "doctors", allEntries = true)
+    public void registerDoctor(DoctorRegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already in use");
+        }
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(encoder.encode(request.getPassword()));
+        user.setRole(User.Role.DOCTOR);
+        user.setName(request.getName());
+        userRepository.save(user);
+
+        Doctor doctor = new Doctor();
+        doctor.setUser(user);
+        doctor.setName(request.getName());
+        doctor.setSpecialization(request.getSpecialization());
+        doctor.setExperience(request.getExperience());
+        doctor.setPhone(request.getPhone());
+        doctorRepository.save(doctor);
+    }
+
+    // ---------- Delete doctor (admin only) – cascade fix ----------
+    @CacheEvict(value = "doctors", allEntries = true)
     @Transactional
     public void deleteDoctor(Long userId) {
         User user = userRepository.findById(userId)
@@ -72,7 +91,19 @@ public class AuthService {
         if (user.getRole() != User.Role.DOCTOR) {
             throw new RuntimeException("User is not a doctor");
         }
-        doctorRepository.findByUserId(userId).ifPresent(doctorRepository::delete);
+        // Find doctor profile
+        Doctor doctor = doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+
+        Long doctorId = doctor.getId();
+
+        // 1. Delete all appointments for this doctor
+        appointmentRepository.deleteBySlotDoctorId(doctorId);
+        // 2. Delete all slots belonging to this doctor
+        slotRepository.deleteByDoctorId(doctorId);
+        // 3. Delete the doctor profile
+        doctorRepository.delete(doctor);
+        // 4. Delete the user account
         userRepository.delete(user);
     }
 }

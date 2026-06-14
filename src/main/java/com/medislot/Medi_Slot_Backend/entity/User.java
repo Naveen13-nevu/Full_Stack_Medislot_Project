@@ -21,7 +21,7 @@ public class User {
     private Role role;
 
     // Patient-specific fields (nullable for doctors/admins)
-    private String name;                // full name of patient or doctor display name
+    private String name;
     private String location;
     private String pincode;
 

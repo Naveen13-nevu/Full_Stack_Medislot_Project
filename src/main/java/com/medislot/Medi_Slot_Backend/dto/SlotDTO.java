@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.time.LocalDateTime;
 
-@Data @AllArgsConstructor
+@Data
+@AllArgsConstructor
 public class SlotDTO {
     private Long id;
     private Long doctorId;

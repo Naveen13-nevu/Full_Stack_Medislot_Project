@@ -5,7 +5,7 @@ spring:
   application:
     name: Medi-Slot-Backend
 
-  # ─── Default datasource (used when no profile is set) ───
+  # ─── Default datasource ───
   datasource:
     url: jdbc:mysql://localhost:3306/Medislot_backend
     username: root

@@ -45,7 +45,7 @@ public class AuthService {
         return new AuthResponse(token, role);
     }
 
-    // ---------- Patient registration (public) ----------
+    // ---------- Patient registration ----------
     public void registerPatient(PatientRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
@@ -60,7 +60,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    // ---------- Doctor registration (admin only) ----------
+    // ---------- Doctor registration  ----------
     @CacheEvict(value = "doctors", allEntries = true)
     public void registerDoctor(DoctorRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -82,7 +82,7 @@ public class AuthService {
         doctorRepository.save(doctor);
     }
 
-    // ---------- Delete doctor (admin only) – cascade fix ----------
+    // ---------- Delete doctor  ----------
     @CacheEvict(value = "doctors", allEntries = true)
     @Transactional
     public void deleteDoctor(Long userId) {

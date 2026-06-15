@@ -24,7 +24,7 @@ public class JwtUtils {
 
     public String generateToken(String email, String role) {
         return Jwts.builder()
-                .subject(email)      // subject is now email
+                .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
